@@ -1,0 +1,17 @@
+<?php
+    // $data = $block->getCurrentProductInfo();
+    $currentProduct = $block->getCurrentProduct();
+    $productId = $currentProduct->getId();
+    $docs = $block->getInfoById($productId);
+    $docUrl = $block->getDocUrl($docs['file_link']);
+
+?>
+<?php if ($docs):?>
+    <h2>Product info:</h2>
+<?php endif;?>
+<?php if ($docs['ext_link']):?>
+    <a href="<?= $docs['ext_link'] ?>">WWW</a>
+<?php endif;?>
+<?php if ($docs['file_link']):?>
+    <a href="<?= $docUrl ?>">Download</a>
+<?php endif;?>

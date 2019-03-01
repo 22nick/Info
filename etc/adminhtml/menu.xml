@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Tunik_Info::info" 
+            resource="Tunik_Info::info" 
+            title="Info" 
+            module="Tunik_Info" 
+            sortOrder="13"/>
+        <add id="Tunik_Info::brand_list" 
+            resource="Tunik_Info::brand_list" 
+            title="Brands" 
+            action="info/brand/index" 
+            module="Tunik_Info" 
+            parent="Tunik_Info::info"
+            sortOrder="15"/>   
+        <add id="Tunik_Info::docs_list" 
+            resource="Tunik_Info::docs_list" 
+            title="Docs" 
+            action="info/docs/index" 
+            module="Tunik_Info" 
+            parent="Tunik_Info::info"
+            sortOrder="16"/>     
+    </menu>
+</config>
