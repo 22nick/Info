@@ -4,6 +4,7 @@ namespace Tunik\Info\Controller\Adminhtml\Docs;
 use Magento\Backend\App\Action;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Tunik\Info\Model\DocsUploader;
             
 class Save extends \Magento\Backend\App\Action
 {
@@ -24,6 +25,8 @@ class Save extends \Magento\Backend\App\Action
      */
     protected $objectRepository;
 
+    // protected $docsUploader;
+
     /**
      * @param Action\Context $context
      * @param DataPersistorInterface $dataPersistor
@@ -33,10 +36,11 @@ class Save extends \Magento\Backend\App\Action
         Action\Context $context,
         DataPersistorInterface $dataPersistor,
         \Tunik\Info\Model\DocsRepository $objectRepository
+        // \Tunik\Info\Model\DocsUploader $docsUploader
     ) {
         $this->dataPersistor    = $dataPersistor;
         $this->objectRepository  = $objectRepository;
-        
+        // $this->docsUploader = $docsUploader;
         parent::__construct($context);
     }
 
@@ -73,6 +77,9 @@ class Save extends \Magento\Backend\App\Action
 
             try {
                 $this->objectRepository->save($model);
+                // if ($docName) {
+                //     $this->docsUploader->moveFileFromTmp($docName);
+                // }
                 $this->messageManager->addSuccess(__('You saved the thing.'));
                 $this->dataPersistor->clear('tunik_info_docs');
                 if ($this->getRequest()->getParam('back')) {

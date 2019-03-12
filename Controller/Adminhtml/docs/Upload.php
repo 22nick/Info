@@ -37,7 +37,6 @@ class Upload extends \Magento\Backend\App\Action
     {
         
         $fileId = $this->_request->getParam('param_name', 'doc');
-        // var_dump($this->docsUploader->mediaDirectory);
         
         try {
             $result = $this->docsUploader->saveFileToTmpDir($fileId);

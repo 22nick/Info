@@ -275,7 +275,7 @@ class DocsUploader
      *
      * @return void
      */
-    public function deleteImage($docName, $type = 'dir')
+    public function deleteDoc($docName, $type = 'dir')
     {
         $basePath = $this->getBasePath();
         if ($type == 'tmp') {

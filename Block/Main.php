@@ -72,15 +72,17 @@ class Main extends \Magento\Framework\View\Element\Template
         
         // exit;
         
-        return $collection->getFirstItem();
+        return $collection; //->getFirstItem();
     }
 
-    public function getCurrentProductInfo()
+    public function getInfoByBrand($brandId)
     {
-        $currentProduct = $this->_registry->registry('current_product');
-        $brandId = $currentProduct->getBrand();
-        $data = getInfoByBrandId($brandId);
-        return $data;
+        $docs = $this->docsFactory->create();
+        $collection = $docs->getCollection();
+
+        $collection->addFieldToFilter('general_private', array('eq'=>2))
+                    ->addFieldToFilter('product_id', array('eq'=>$brandId));        
+        return $collection;
     }
     
     public function getDocUrl($doc)

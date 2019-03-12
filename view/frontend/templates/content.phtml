@@ -1,17 +1,37 @@
 <?php
-    // $data = $block->getCurrentProductInfo();
     $currentProduct = $block->getCurrentProduct();
     $productId = $currentProduct->getId();
+    $brandId = $currentProduct->getBrand();
     $docs = $block->getInfoById($productId);
-    $docUrl = $block->getDocUrl($docs['file_link']);
-
+    $brand = $block->getInfoByBrand($brandId);
 ?>
+<?php if ($brand):?>
+    <h2>Brand info:</h2>
+<?php endif;?>
+<ul>
+    <?php foreach($brand as $doc): ?>
+        <li>
+            <?php if ($doc['ext_link']):?>
+                <a href="<?= $doc['ext_link'] ?>">WWW</a>
+            <?php endif;?>
+            <?php if ($doc['file_link']):?>
+                <a href="<?= $block->getDocUrl($doc['file_link']); ?>">Download</a>
+            <?php endif;?>
+        </li>
+    <?php endforeach; ?>
+</ul>
 <?php if ($docs):?>
     <h2>Product info:</h2>
 <?php endif;?>
-<?php if ($docs['ext_link']):?>
-    <a href="<?= $docs['ext_link'] ?>">WWW</a>
-<?php endif;?>
-<?php if ($docs['file_link']):?>
-    <a href="<?= $docUrl ?>">Download</a>
-<?php endif;?>
+<ul>
+    <?php foreach($docs as $doc): ?>
+        <li>
+            <?php if ($doc['ext_link']):?>
+                <a href="<?= $doc['ext_link'] ?>">WWW</a>
+            <?php endif;?>
+            <?php if ($doc['file_link']):?>
+                <a href="<?= $block->getDocUrl($doc['file_link']); ?>">Download</a>
+            <?php endif;?>
+        </li>
+    <?php endforeach; ?>
+</ul>

@@ -27,11 +27,6 @@ class Brands extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
         $this->_options = [ 
             ['label'=>'', 'value'=>''],
             ['label'=>'', 'value'=>'0']
-            
-            // ['label'=>'Adidas', 'value'=>'1'],
-            // ['label'=>'Reebok', 'value'=>'2'],
-            // ['label'=>'Nike', 'value'=>'3'],
-            // ['label'=>'Puma', 'value'=>'4']
         ];
 
         foreach ($brandList as $item)
