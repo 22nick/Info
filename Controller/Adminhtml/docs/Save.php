@@ -1,10 +1,12 @@
 <?php
 namespace Tunik\Info\Controller\Adminhtml\Docs;
 
-use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Tunik\Info\Model\DocsUploader;
+use Magento\Framework\App\ObjectManager;
+
             
 class Save extends \Magento\Backend\App\Action
 {
@@ -25,22 +27,20 @@ class Save extends \Magento\Backend\App\Action
      */
     protected $objectRepository;
 
-    // protected $docsUploader;
+    protected $_docsUploader;
 
     /**
-     * @param Action\Context $context
+     * @param Context $context
      * @param DataPersistorInterface $dataPersistor
      * @param \Tunik\Info\Model\DocsRepository $objectRepository
      */
     public function __construct(
-        Action\Context $context,
+        Context $context,
         DataPersistorInterface $dataPersistor,
         \Tunik\Info\Model\DocsRepository $objectRepository
-        // \Tunik\Info\Model\DocsUploader $docsUploader
     ) {
         $this->dataPersistor    = $dataPersistor;
         $this->objectRepository  = $objectRepository;
-        // $this->docsUploader = $docsUploader;
         parent::__construct($context);
     }
 
@@ -53,7 +53,6 @@ class Save extends \Magento\Backend\App\Action
     public function execute()
     {
         $data = $this->getRequest()->getPostValue();
-        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
         $resultRedirect = $this->resultRedirectFactory->create();
         if ($data) {
             if (isset($data['is_active']) && $data['is_active'] === 'true') {
@@ -63,23 +62,42 @@ class Save extends \Magento\Backend\App\Action
                 $data['docs_id'] = null;
             }
 
-            /** @var \Tunik\Info\Model\Docs $model */
             $model = $this->_objectManager->create('Tunik\Info\Model\Docs');
 
             $id = $this->getRequest()->getParam('docs_id');
+            
+            $prevDocName = '';
+
             if ($id) {
                 $model = $this->objectRepository->getById($id);
+                $prevDocName = $model->getFileLink();
             }
 
             $data = $this->_filterDocData($data);
+            
+            $docName = '';
+            if (!empty($data['file_link'])) {
+                $docName = $data['file_link'];
+            }
 
             $model->setData($data);
-
+            
             try {
+                if($prevDocName && ($docName != $prevDocName))
+                {
+                    $this->_getDocsUploader()->deleteDoc($prevDocName,'dir');
+                } 
+                
+                if($docName != $prevDocName)
+                {
+                    $data['file_link'] = $this->_getDocsUploader()->moveFileFromTmp($docName);
+                }
+                
+                $model->setData($data);
                 $this->objectRepository->save($model);
-                // if ($docName) {
-                //     $this->docsUploader->moveFileFromTmp($docName);
-                // }
+                
+                $this->_getDocsUploader()->deleteTempFiles();
+
                 $this->messageManager->addSuccess(__('You saved the thing.'));
                 $this->dataPersistor->clear('tunik_info_docs');
                 if ($this->getRequest()->getParam('back')) {
@@ -108,5 +126,13 @@ class Save extends \Magento\Backend\App\Action
             $data['file_link'] = null;
         }
         return $data;
+    }
+    
+    private function _getDocsUploader()
+    {
+        if ($this->_docsUploader === null) {
+            $this->_docsUploader = ObjectManager::getInstance()->get(DocsUploader::class);
+        }
+        return $this->_docsUploader;
     }    
 }

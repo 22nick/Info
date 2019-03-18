@@ -35,12 +35,10 @@ class Upload extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-        
         $fileId = $this->_request->getParam('param_name', 'doc');
         
         try {
             $result = $this->docsUploader->saveFileToTmpDir($fileId);
-
             $result['cookie'] = [
                 'name' => $this->_getSession()->getName(),
                 'value' => $this->_getSession()->getSessionId(),

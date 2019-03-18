@@ -23,27 +23,7 @@ class Main extends \Magento\Framework\View\Element\Template
 
     function _prepareLayout()
     {
-        // $docs = $this->docsFactory->create();
-        // $collection = $docs->getCollection();
-        
-        // $collection->setPageSize(4);
 
-        // $collection->addFieldToFilter('product_id', array('eq'=>'13'));
-        
-        // echo $collection->getSelect();
-        // var_dump($collection);
-        
-        // $collection = $this->helper->getBrandList();
-
-        // foreach($collection as $item)
-        // {
-        //     var_dump('Brand: ' . $item->getTitle() . ' <br>');
-        // //     if ($item->getProductId()==13)
-        // //     {
-        // //         var_dump($item->getData());
-        // //     }
-        // }
-        // exit;
     }
 
     public function getDocs()
@@ -68,11 +48,7 @@ class Main extends \Magento\Framework\View\Element\Template
 
         $collection->addFieldToFilter('product_id', array('eq'=>$productId));        
         
-        // var_dump($productId);
-        
-        // exit;
-        
-        return $collection; //->getFirstItem();
+        return $collection;
     }
 
     public function getInfoByBrand($brandId)

@@ -2,6 +2,9 @@
 
 namespace Tunik\Info\Model;
 
+use Tunik\Info\Model\FileInfo;
+use Magento\Framework\App\ObjectManager;
+
 /**
  * Docs uploader
  */
@@ -61,6 +64,8 @@ class DocsUploader
      */
     public $allowedExtensions;
 
+    // private $fileInfo;
+
     /**
      * DocsUploader constructor
      *
@@ -81,7 +86,8 @@ class DocsUploader
         \Psr\Log\LoggerInterface $logger,
         $baseTmpPath = "info/tmp/doc",
         $basePath = "info/doc",
-        $allowedExtensions= ['pdf', 'doc', 'rtf', 'tiff', 'jpg']
+        $allowedExtensions= ['pdf', 'doc', 'rtf', 'tiff'],
+        \Tunik\Info\Model\FileInfo $fileInfo
     ) {
         $this->coreFileStorageDatabase = $coreFileStorageDatabase;
         $this->mediaDirectory = $filesystem->getDirectoryWrite(\Magento\Framework\App\Filesystem\DirectoryList::MEDIA);
@@ -91,6 +97,7 @@ class DocsUploader
         $this->baseTmpPath = $baseTmpPath;
         $this->basePath = $basePath;
         $this->allowedExtensions= $allowedExtensions;
+        $this->fileInfo = $fileInfo;
     }
 
     /**
@@ -163,7 +170,7 @@ class DocsUploader
      * Retrieve path
      *
      * @param string $path
-     * @param string $imageName
+     * @param string $docName
      *
      * @return string
      */
@@ -175,7 +182,7 @@ class DocsUploader
     /**
      * Checking file for moving and move it
      *
-     * @param string $imageName
+     * @param string $docName
      *
      * @return string
      *
@@ -185,32 +192,55 @@ class DocsUploader
     {
         $baseTmpPath = $this->getBaseTmpPath();
         $basePath = $this->getBasePath();
-        
-        // $path = $this->_directory_list->getPath('media') . '/blog'
-        
+            
         $baseDocPath = $this->getFilePath($basePath, $docName);
         $baseTmpDocPath = $this->getFilePath($baseTmpPath, $docName);
 
-        try {
-            if ($this->getFileInfo()->isExist($docName, $this->baseTmpPath)) {
-                $this->coreFileStorageDatabase->copyFile(
-                    $baseTmpDocPath,
-                    $baseDocPath
-                );
-                $this->mediaDirectory->renameFile(
-                    $baseTmpDocPath,
-                    $baseDocPath
+        $newDocName = $docName;
+        if ($docName)
+        {
+            try 
+            {
+                $newDocName = $this->getUniqueDocName($basePath, $docName);
+                
+                $baseDocPath = $this->getFilePath($basePath, $newDocName);
+
+                if ($this->getFileInfo()->isExist($docName, $this->baseTmpPath)) 
+                {
+                    $this->coreFileStorageDatabase->copyFile(
+                        $baseTmpDocPath,
+                        $baseDocPath
+                    );
+                    $this->mediaDirectory->renameFile(
+                        $baseTmpDocPath,
+                        $baseDocPath
+                    );
+                }
+            } catch (\Exception $e) {
+                throw new \Magento\Framework\Exception\LocalizedException(
+                    __('Something went wrong while moving the file(s).')
                 );
             }
-        } catch (\Exception $e) {
-            throw new \Magento\Framework\Exception\LocalizedException(
-                __('Something went wrong while saving the file(s).')
-            );
         }
 
-        return $docName;
+        return $newDocName;
     }
 
+    /**
+     * Get FileInfo instance
+     *
+     * @return FileInfo
+     *
+     * @deprecated 101.1.0
+     */
+    private function getFileInfo()
+    {
+        if ($this->fileInfo === null) {
+            $this->fileInfo = ObjectManager::getInstance()->get(FileInfo::class);
+        }
+        return $this->fileInfo;
+    }
+    
     /**
      * Checking file for save and save it to tmp dir
      *
@@ -231,7 +261,6 @@ class DocsUploader
 
         $result = $uploader->save($this->mediaDirectory->getAbsolutePath($baseTmpPath));
 
-        // var_dump($result);
         unset($result['path']);
         
         if (!$result) {
@@ -240,11 +269,7 @@ class DocsUploader
             );
         }
 
-        /**
-         * Workaround for prototype 1.7 methods "isJSON", "evalJSON" on Windows OS
-         */
         $result['tmp_name'] = str_replace('\\', '/', $result['tmp_name']);
-        // $result['path'] = str_replace('\\', '/', $result['path']);
         $result['url'] = $this->storeManager
                 ->getStore()
                 ->getBaseUrl(
@@ -275,7 +300,7 @@ class DocsUploader
      *
      * @return void
      */
-    public function deleteDoc($docName, $type = 'dir')
+    public function deleteDoc($docName, $type) // = 'dir'
     {
         $basePath = $this->getBasePath();
         if ($type == 'tmp') {
@@ -285,5 +310,31 @@ class DocsUploader
         if ($this->getFileInfo()->isExist($docName, $basePath)) {
             $this->getFileInfo()->deleteFile($docName, $basePath);
         }
+    }
+    
+    public function deleteTempFiles()
+    {
+        $files = $this->getFileInfo()->getFiles($this->getBaseTmpPath() . '/*');
+
+        foreach($files as $file)
+        { 
+            if(is_file($file))
+            unlink($file); 
+        }
+        return true;
+    }
+
+    public function getUniqueDocName($directory, $filename)
+    {
+        if ($this->getFileInfo()->isExist($filename, $directory)) {
+            $index = 1;
+            $extension = strrchr($filename, '.');
+            $filenameWoExtension = substr($filename, 0, -1 * strlen($extension));
+            while ($this->getFileInfo()->isExist($filenameWoExtension . '_' . $index . $extension, $directory)) {
+                $index++;
+            }
+            $filename = $filenameWoExtension . '_' . $index . $extension;
+        }
+        return $filename;
     }
 }

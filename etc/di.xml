@@ -9,7 +9,6 @@
                 <item name="doc" xsi:type="string">doc</item>
                 <item name="rtf" xsi:type="string">rtf</item>
                 <item name="tiff" xsi:type="string">tiff</item>
-                <item name="jpg" xsi:type="string">jpg</item>
             </argument>
         </arguments>
     </type>

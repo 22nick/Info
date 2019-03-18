@@ -1,8 +1,6 @@
 <?php
 namespace Tunik\Info\Block;
 
-// use Magento\Catalog\Block\Product\View;
-
 class Brand extends \Magento\Framework\View\Element\Template
 {
     protected $brandFactory;
@@ -23,8 +21,6 @@ class Brand extends \Magento\Framework\View\Element\Template
     function _prepareLayout()
     {
         $brand = $this->brandFactory->create();
-        // $product = $this->getPtoduct();
-        // var_dump($product);
     }
 
     public function getBrandInfo()

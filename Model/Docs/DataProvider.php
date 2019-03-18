@@ -4,6 +4,9 @@ namespace Tunik\Info\Model\Docs;
 use Tunik\Info\Model\ResourceModel\Docs\CollectionFactory;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\Filesystem;
+use Tunik\Info\Model\FileInfo;
 
 class DataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
 {
@@ -19,6 +22,8 @@ class DataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
      * @var array
      */
     protected $loadedData;
+
+    private $fileInfo;
 
     /**
      * @param string $name
@@ -72,10 +77,15 @@ class DataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
         foreach ($items as $item) 
         {
             $this->loadedData[$item->getId()] = $item->getData();
-            if ($item->getFileLink()) 
+            $fileName = $item->getFileLink();
+
+            if ($this->getFileInfo()->isExist($fileName)) 
             {
-                $m['file_link'][0]['name'] = $item->getFileLink();
-                $m['file_link'][0]['url'] = $this->getMediaUrl().$item->getFileLink();
+                $stat = $this->getFileInfo()->getStat($fileName);
+
+                $m['file_link'][0]['name'] = $fileName;
+                $m['file_link'][0]['url'] = $this->getMediaUrl().$fileName;
+                $m['file_link'][0]['size'] = isset($stat) ? $stat['size'] : 0;
                 $fullData = $this->loadedData;
                 $this->loadedData[$item->getId()] = array_merge($fullData[$item->getId()], $m);
             }
@@ -97,5 +107,20 @@ class DataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
         $mediaUrl = $this->storeManager->getStore()
             ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA).'info/tmp/doc';
         return $mediaUrl;
+    }
+    
+    /**
+     * Get FileInfo instance
+     *
+     * @return FileInfo
+     *
+     * @deprecated 101.1.0
+     */
+    private function getFileInfo()
+    {
+        if ($this->fileInfo === null) {
+            $this->fileInfo = ObjectManager::getInstance()->get(FileInfo::class);
+        }
+        return $this->fileInfo;
     }
 }
